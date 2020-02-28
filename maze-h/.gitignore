@@ -1,3 +1,6 @@
 .stack-work/
 maze-h.cabal
+maze-h.iml
+.idea
+stack.yaml.lock
 *~

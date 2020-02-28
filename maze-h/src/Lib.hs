@@ -2,6 +2,8 @@ module Lib where
 
 import Data.Maybe (listToMaybe)
 import Control.Monad
+import Data.List
+import Data.Function (on)
 
 type Cell = (Int, Int)
 type Maze = [(Cell, Char)]
@@ -17,12 +19,8 @@ nextSteps (x, y) mz =
       [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
   
 parseMaze :: [String] -> Maze
-parseMaze ls =
-  [ ((x, y), ls !! y !! x)
-  | y <- [0 .. length ls - 1]
-  , x <- [0 .. length (ls !! y) - 1]
-  ]
-
+parseMaze = 
+ concatMap (\(y, str) -> zipWith (\x ch -> ((x, y), ch)) [0..] str) . zip [0 ..] 
 
 firstPath :: ([Path] -> Cell-> Maze -> Maybe Path)
                -> Cell -> Cell -> Maze -> Maybe Path
@@ -45,16 +43,11 @@ solve ls = do
   st <- listToMaybe $ findPoints 'S' mz
   gl <- listToMaybe $ findPoints 'G' mz
   path <- firstPath _byB st gl mz
-  let ans =
-        [ [ ch
-          | x <- [0 .. length (ls !! y) - 1]
-          , let ch =
-                  if (x, y) `elem` path && ls !! y !! x == ' '
-                  then '$'
-                  else ls !! y !! x
-          ]
-        | y <- [0 .. length ls - 1]
-        ]
+  let f c ch = if c `elem` path && ch == ' ' 
+               then '$' else ch  
+  let solvedMaze = map (\(c, ch) -> (c, f c ch)) mz
+  let ans = transpose . map (map snd) 
+          . groupBy ((==) `on` fst . fst) . sortOn fst $ solvedMaze
   return ans
 
 runSolve :: FilePath -> IO ()
