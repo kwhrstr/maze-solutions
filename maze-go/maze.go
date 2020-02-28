@@ -34,7 +34,8 @@ func main() {
 /*
 解答
 いろいろな関数を組み合わせるだけ
-startやgoalがなかったら何もしない
+startやgoalがなかったらメッセージ出力
+解答が得られなければメッセージ出力
 */
 func solve(lines []string) {
 	mazeSet := parseMaze(lines)
