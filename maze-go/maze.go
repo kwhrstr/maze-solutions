@@ -1,7 +1,7 @@
 package main
 
 import (
-	fmt "fmt"
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -11,18 +11,17 @@ type Cell struct {
 	y int
 }
 
-type Maze map[Cell] rune
+type Maze map[Cell]rune
 
 type Path []Cell
 
-
-type MazeSet struct {
-	maze Maze
+type MazeStruct struct {
+	maze  Maze
 	start Cell
-	goal Cell
+	goal  Cell
 }
 
-func nillCell() Cell {return Cell{- 1, - 1}}
+func nillCell() Cell { return Cell{-1, -1} }
 
 func main() {
 	bytes, err := ioutil.ReadFile("maze.txt")
@@ -32,24 +31,33 @@ func main() {
 	solve(strings.Split(string(bytes), "\n"))
 }
 
-func solve (lines []string) {
+/*
+解答
+いろいろな関数を組み合わせるだけ
+startやgoalがなかったら何もしない
+*/
+func solve(lines []string) {
 	mazeSet := parseMaze(lines)
 	if mazeSet.start == nillCell() {
-		fmt.Printf("there is not start point")
+		fmt.Println("there is not start point")
 		return
 	}
 	if mazeSet.goal == nillCell() {
-		fmt.Printf("there is not goal point")
+		fmt.Println("there is not goal point")
 		return
 	}
 
-	path := _byb(mazeSet.start, mazeSet.goal, mazeSet.maze)
+	path, ok := _byb(mazeSet.start, mazeSet.goal, mazeSet.maze)
+	if !ok {
+		fmt.Println("there is no solution!!")
+		return
+	}
 	pathSet := map[Cell]struct{}{}
-	for _ ,c := range path {
+	for _, c := range path {
 		pathSet[c] = struct{}{}
 	}
 
-	for y , line := range lines {
+	for y, line := range lines {
 		solveLine := ""
 		for x, ch := range line {
 			_, ok := pathSet[Cell{x, y}]
@@ -63,7 +71,10 @@ func solve (lines []string) {
 	}
 }
 
-
+/*
+次の道を探す
+壁や登録されていない道順は使わない
+*/
 func nextSteps(cell Cell, maze Maze) []Cell {
 	allNexts := [4]Cell{
 		{cell.x + 1, cell.y},
@@ -72,7 +83,7 @@ func nextSteps(cell Cell, maze Maze) []Cell {
 		{cell.x, cell.y - 1},
 	}
 	var nexts []Cell
-	for  _, next := range allNexts {
+	for _, next := range allNexts {
 		if val, ok := maze[next]; ok && val != '*' {
 			nexts = append(nexts, next)
 		}
@@ -80,16 +91,15 @@ func nextSteps(cell Cell, maze Maze) []Cell {
 	return nexts
 }
 
-
-func parseMaze (lines []string) MazeSet {
-	parsed := MazeSet{
+func parseMaze(lines []string) MazeStruct {
+	parsed := MazeStruct{
 		map[Cell]rune{},
 		nillCell(),
 		nillCell()}
 	for y, line := range lines {
 		for x, ch := range line {
 			parsed.maze[Cell{x, y}] = ch
-			if ch == 'S'{
+			if ch == 'S' {
 				parsed.start = Cell{x, y}
 			}
 			if ch == 'G' {
@@ -100,23 +110,30 @@ func parseMaze (lines []string) MazeSet {
 	return parsed
 }
 
-func _byb (startCell Cell, goalCell Cell, maze Maze) Path {
-	queue := []Path {{startCell}}
+/*
+幅優先探索
+Queueでとりうる道順を取り出す
+道順が'G'にたどり着いてたらclear
+たどり着いていなかったらとりうる値を登録
+更新した道順はQueueに登録
+*/
+func _byb(startCell Cell, goalCell Cell, maze Maze) (Path, bool) {
+	queue := []Path{{startCell}}
 	moved := map[Cell]struct{}{}
 	moved[startCell] = struct{}{}
 	for len(queue) > 0 {
 		path := queue[0]
 		if path[0] == goalCell {
-			return path
+			return path, true
 		}
 		queue = queue[1:]
 		for _, next := range nextSteps(path[0], maze) {
-			if _, m := moved[next]; m {continue}
+			if _, m := moved[next]; m {
+				continue
+			}
 			queue = append(queue, append(Path{next}, path...))
 			moved[next] = struct{}{}
 		}
 	}
-	return Path{}
+	return Path{}, false
 }
-
-
