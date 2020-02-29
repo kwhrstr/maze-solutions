@@ -38,17 +38,17 @@ startやgoalがなかったらメッセージ出力
 解答が得られなければメッセージ出力
 */
 func solve(lines []string) {
-	mazeSet := parseMaze(lines)
-	if mazeSet.start == nillCell() {
+	mazeStruct := parseMaze(lines)
+	if mazeStruct.start == nillCell() {
 		fmt.Println("there is not start point")
 		return
 	}
-	if mazeSet.goal == nillCell() {
+	if mazeStruct.goal == nillCell() {
 		fmt.Println("there is not goal point")
 		return
 	}
 
-	path, ok := _byb(mazeSet.start, mazeSet.goal, mazeSet.maze)
+	path, ok := _byb(mazeStruct.start, mazeStruct.goal, mazeStruct.maze)
 	if !ok {
 		fmt.Println("there is no solution!!")
 		return
@@ -62,7 +62,7 @@ func solve(lines []string) {
 		solveLine := ""
 		for x, ch := range line {
 			_, ok := pathSet[Cell{x, y}]
-			if mazeSet.maze[Cell{x, y}] == ' ' && ok {
+			if mazeStruct.maze[Cell{x, y}] == ' ' && ok {
 				solveLine += string('$')
 			} else {
 				solveLine += string(ch)
