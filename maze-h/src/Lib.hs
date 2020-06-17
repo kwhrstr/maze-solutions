@@ -28,27 +28,28 @@ firstPath f p0 = f [[p0]]
 
 _byB :: Alternative m => [Path] -> Cell -> Maze -> m Path
 _byB [] _ _ = empty
-_byB ap@(path:queue) p1 mz
-  | head path == p1 = pure path <|> _byB  queue p1 mz
-  | otherwise =
-    _byB (queue ++ [x : path | x <- nextSteps (head path) mz, all (x `notElem`) ap]) p1 mz
+_byB ([]:queue) p1 mz = _byB queue p1 mz
+_byB ap@(path@(p:_):queue) p1 mz 
+ | p == p1 = pure path <|> _byB queue p1 mz
+ | otherwise = 
+    _byB (queue ++ [x : path | x <- nextSteps p mz, all (x `notElem`) ap]) p1 mz
 
 
-findPoints :: Char -> Maze -> [Cell]
-findPoints c = map  fst . filter (\val -> snd val == c)
+findPoint :: Char -> Maze -> Maybe Cell
+findPoint c = fmap  fst . find (\val -> snd val == c)
 
 solve :: [String] -> Maybe [String]
 solve ls = do
   let mz = parseMaze ls
-  st <- listToMaybe $ findPoints 'S' mz
-  gl <- listToMaybe $ findPoints 'G' mz
+  st <- findPoint 'S' mz
+  gl <- findPoint 'G' mz
   path <- firstPath _byB st gl mz
   let f c ch = if c `elem` path && ch == ' '
                then '$' else ch
   let solvedMaze = map (\(c, ch) -> (c, f c ch)) mz
-  let ans = transpose . map (map snd)
-          . groupBy ((==) `on` fst . fst) . sortOn fst $ solvedMaze
-  return ans
+  pure . transpose . map (map snd)
+       . groupBy ((==) `on` fst . fst) . sortOn fst $ solvedMaze
+  
 
 runSolve :: FilePath -> IO ()
 runSolve fp = do
