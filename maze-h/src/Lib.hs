@@ -47,8 +47,7 @@ solve ls = do
   let f c ch = if c `elem` path && ch == ' '
                then '$' else ch
   let solvedMaze = map (\(c, ch) -> (c, f c ch)) mz
-  pure . transpose . map (map snd)
-       . groupBy ((==) `on` fst . fst) . sortOn fst $ solvedMaze
+  pure .  map (map snd . sortOn fst) . groupBy ((==) `on` snd . fst) . sortOn (snd . fst) $ solvedMaze
   
 
 runSolve :: FilePath -> IO ()
