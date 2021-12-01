@@ -12,12 +12,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let lines  = contents.lines().collect::<Vec<&str>>();
     let ans = match solve(&lines.as_slice()) {
         Some(path) => {
-            let solved_char = |x, y, ch | {
-                if path.contains(&(x, y))  && ch == ' ' {
-                    '$'
-                } else {
-                    ch
-                }
+            let solved_char = |x, y, ch | if path.contains(&(x, y))  && ch == ' ' {
+                '$'
+            } else {
+                ch
             };
             lines.iter().enumerate().map(|(y, row)| {
                 row.char_indices().map(|(x, ch)| solved_char(x, y, ch)).collect::<String>()
