@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some(path) => {
             let solved_char = |x, y, ch | {
                 if path.contains(&(x, y))  && ch == ' ' {
-                    '&'
+                    '$'
                 } else {
                     ch
                 }
