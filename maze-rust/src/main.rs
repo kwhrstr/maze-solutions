@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::error::Error;
 use std::fs::{read_to_string};
+use itertools::Itertools;
 
 type Cell = (usize, usize);
 type Maze = HashMap<Cell, char>;
@@ -11,22 +12,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let lines  = contents.lines().collect::<Vec<&str>>();
     let ans = match solve(&lines.as_slice()) {
         Some(path) => {
-            let mut tmp = Vec::new();
-            for (y, row) in lines.iter().enumerate() {
-                let mut line = String::new();
-                for (x, ch) in row.char_indices() {
-                    let solved_char = if path.contains(&(x, y)) && ch == ' ' {
-                        '$'
-                    } else {
-                        ch
-                    };
-                    line.push(solved_char);
+            let solved_char = |x, y, ch | {
+                if path.contains(&(x, y))  && ch == ' ' {
+                    '&'
+                } else {
+                    ch
                 }
-                tmp.push(line);
-            }
-            tmp.join("\n")
+            };
+            lines.iter().enumerate().map(|(y, row)| {
+                row.char_indices().map(|(x, ch)| solved_char(x, y, ch)).collect::<String>()
+            }).intersperse("\n".to_string()).collect::<String>()
         },
-        None => String::from("no answer")
+        None => "no answer".to_string()
     };
     println!("{}", ans);
     Ok(())
