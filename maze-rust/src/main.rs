@@ -33,9 +33,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn solve(lines: &[&str]) -> Option<Path> {
-    let (opt_start, opt_goal, mz) = parse_maze(lines);
-    let start = opt_start?;
-    let goal = opt_goal?;
+    let mz = parse_maze(lines);
+    let start = mz.keys().find(|cell| mz.get(cell) == Some(&'S'))?;
+    let goal = mz.keys().find(|cell| mz.get(cell) == Some(&'G'))?;
     by_b(&start, &goal, &mz)
 }
 
@@ -45,21 +45,14 @@ fn next_steps(&(x, y): &Cell, mz: &Maze) -> Path {
     nexts.iter().filter(|&cell| mz.contains_key(cell) && mz.get(cell) != Some(&'*') ).cloned().collect()
 }
 
-fn parse_maze(lines: &[&str]) -> (Option<Cell>, Option<Cell>, Maze) {
-    let mut start: Option<Cell> = None;
-    let mut goal: Option<Cell> = None;
+fn parse_maze(lines: &[&str]) -> Maze {
     let mut mz: Maze = HashMap::new();
     for (y, line) in lines.iter().enumerate() {
         for (x, ch) in line.char_indices() {
-            if ch == 'S' {
-                start = Some((x, y))
-            } else if ch == 'G' {
-                goal = Some((x, y))
-            }
             mz.insert((x, y), ch);
         }
     }
-    (start, goal, mz)
+    mz
 }
 
 fn by_b(&start: &Cell, &goal: &Cell, mz: &Maze) -> Option<Path> {
